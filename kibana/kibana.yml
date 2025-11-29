@@ -1,0 +1,37 @@
+# Kibana 配置文件
+# 云原生日志收集平台
+
+# 服务器配置
+server.host: "0.0.0.0"
+server.port: 5601
+server.name: "kibana"
+
+# Elasticsearch 连接配置
+elasticsearch.hosts: ["http://elasticsearch:9200"]
+
+# 国际化配置 (中文)
+i18n.locale: "zh-CN"
+
+# 监控配置
+monitoring.ui.container.elasticsearch.enabled: true
+
+# 日志配置
+logging:
+  appenders:
+    console:
+      type: console
+      layout:
+        type: pattern
+  root:
+    level: info
+    appenders: [console]
+
+# 安全配置 (开发环境)
+xpack.security.enabled: false
+xpack.encryptedSavedObjects.encryptionKey: "something_at_least_32_characters"
+xpack.reporting.encryptionKey: "something_at_least_32_characters"
+xpack.security.encryptionKey: "something_at_least_32_characters"
+
+# 首页配置
+newsfeed.enabled: false
+telemetry.enabled: false

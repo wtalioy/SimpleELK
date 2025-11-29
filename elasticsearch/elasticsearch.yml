@@ -1,0 +1,26 @@
+# Elasticsearch 配置文件
+# 云原生日志收集平台
+
+# 集群名称
+cluster.name: "docker-cluster"
+
+# 网络配置
+network.host: 0.0.0.0
+
+# 发现配置 (单节点模式)
+discovery.type: single-node
+
+# 安全配置 (开发环境禁用)
+xpack.security.enabled: false
+xpack.security.enrollment.enabled: false
+xpack.security.http.ssl.enabled: false
+xpack.security.transport.ssl.enabled: false
+
+# 索引配置
+action.auto_create_index: true
+
+# 内存配置
+bootstrap.memory_lock: true
+
+# 日志相关索引设置
+indices.query.bool.max_clause_count: 4096

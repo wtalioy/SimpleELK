@@ -1,0 +1,24 @@
+# Logstash 配置文件
+# 云原生日志收集平台
+
+# HTTP API 配置
+http.host: "0.0.0.0"
+http.port: 9600
+
+# Pipeline 配置
+path.config: /usr/share/logstash/pipeline
+
+# 日志配置
+log.level: info
+
+# 监控配置 (开发环境禁用)
+monitoring.enabled: false
+
+# 队列配置
+queue.type: memory
+queue.max_bytes: 1gb
+
+# Pipeline 工作线程
+pipeline.workers: 2
+pipeline.batch.size: 125
+pipeline.batch.delay: 50
