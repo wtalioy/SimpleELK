@@ -1,0 +1,12 @@
+# Flask Web 应用依赖
+# Python 版本要求: >= 3.7
+
+# Web 框架
+Flask==3.0.0
+
+# WSGI 服务器（生产环境使用）
+gunicorn==21.2.0
+
+# HTTP 请求库（压测脚本使用）
+requests==2.31.0
+
