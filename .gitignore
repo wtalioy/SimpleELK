@@ -4,6 +4,12 @@
 data/
 elasticsearch/data/
 
+# Volumes 持久化数据（保留目录结构，忽略数据内容）
+volumes/elasticsearch/data/*
+volumes/elasticsearch/logs/*
+!volumes/elasticsearch/data/.gitkeep
+!volumes/elasticsearch/logs/.gitkeep
+
 # 日志文件
 *.log
 logs/
