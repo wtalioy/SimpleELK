@@ -10,25 +10,29 @@
 
 Elasticsearch 主配置文件，包含以下优化配置：
 
-#### 🎯 核心配置
+#### 核心配置
+
 - **集群名称**: docker-cluster
 - **节点名称**: es-node-1
 - **节点角色**: master + data + ingest
 - **发现模式**: 单节点模式（开发/测试环境）
 
-#### ⚡ 性能优化
+#### 性能优化
+
 - **内存锁定**: 启用 `bootstrap.memory_lock`，防止swap影响性能
 - **HTTP压缩**: 启用压缩，减少网络传输
 - **查询缓存**: 10% 堆内存用于查询缓存
 - **字段缓存**: 20% 堆内存用于字段数据缓存
 - **线程池优化**: 写入/搜索队列大小设置为1000
 
-#### 🔧 资源配置
+#### 资源配置
+
 - **JVM Heap**: 1GB（通过 docker-compose.yml 配置）
 - **最大分片数**: 3000 per node
 - **索引缓冲**: 10% 堆内存
 
-#### 🔐 安全配置
+#### 安全配置
+
 - **开发环境**: 禁用 X-Pack Security
 - **生产环境**: 建议启用安全功能（详见部署文档）
 
@@ -80,16 +84,6 @@ curl -X PUT "http://localhost:9200/my_index/_settings" \
   }
 }'
 ```
-
-### 版本兼容性
-
-本配置针对 **Elasticsearch 9.2.1** 优化，已移除以下废弃配置：
-
-- ❌ `indices.query.bool.max_clause_count` (已弃用)
-- ❌ `xpack.ilm.enabled` (默认启用)
-- ❌ `xpack.monitoring.collection.enabled` (已弃用)
-
-如果使用其他版本的 Elasticsearch，请参考官方文档调整配置。
 
 ## 快速启动
 
