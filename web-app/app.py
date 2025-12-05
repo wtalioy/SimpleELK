@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 Web 应用 - 用于生成日志供 ELK Stack 采集
-成员5：应用开发
 """
 
 from flask import Flask, request, jsonify
