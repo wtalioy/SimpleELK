@@ -28,12 +28,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app.py .
 
 # 暴露端口
-EXPOSE 5000
+EXPOSE 8000
 
 # 健康检查
 # 每 30 秒检查一次应用是否正常运行
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:5000/health')" || exit 1
+    CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
 
 # 创建非 root 用户运行应用（安全最佳实践）
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
@@ -42,9 +42,9 @@ USER appuser
 # 启动应用
 # 使用 gunicorn 作为生产级 WSGI 服务器
 # --workers 2: 使用 2 个工作进程
-# --bind 0.0.0.0:5000: 监听所有网络接口
+# --bind 0.0.0.0:8000: 监听所有网络接口
 # --access-logfile -: 访问日志输出到 stdout
 # --error-logfile -: 错误日志输出到 stderr
 # --log-level info: 日志级别
-CMD ["gunicorn", "--workers", "2", "--bind", "0.0.0.0:5000", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info", "app:app"]
+CMD ["gunicorn", "--workers", "2", "--bind", "0.0.0.0:8000", "--access-logfile", "-", "--error-logfile", "-", "--log-level", "info", "app:app"]
 

@@ -73,7 +73,7 @@ docker-compose up -d
 docker-compose logs -f
 
 # 4. 
-curl http://localhost:5000/health
+curl http://localhost:8000/health
 
 # 5. 
 docker-compose down
@@ -86,7 +86,7 @@ docker-compose down
 docker build -t elk-web-app .
 
 # 2. 
-docker run -d -p 5000:5000 --name elk-web-app elk-web-app
+docker run -d -p 5000:8000 --name elk-web-app elk-web-app
 
 # 3. 
 docker logs -f elk-web-app
@@ -105,7 +105,7 @@ pip install -r requirements.txt
 # 2. 
 python app.py
 
-# 3.  http://localhost:5000
+# 3.  http://localhost:8000
 ```
 
 ---
@@ -127,7 +127,7 @@ python stress_test.py
 
 ```python
 # 
-TARGET_URL = "http://localhost:5000"
+TARGET_URL = "http://localhost:8000"
 
 #  10-50
 CONCURRENT_USERS = 20
@@ -147,15 +147,15 @@ VERBOSE = True
 ```
  ELK 
 ======================================================================
-: http://localhost:5000
+: http://localhost:8000
 : 20
 : 300 
 ======================================================================
 
-[2025-12-01 10:23:45] 200 |               |   45.32ms | http://localhost:5000/
-[2025-12-01 10:23:46] 200 |           |   52.18ms | http://localhost:5000/api/user/123
-[2025-12-01 10:23:47] 404 | 404           |   12.45ms | http://localhost:5000/error/404
-[2025-12-01 10:23:48] 500 | 500           |   23.67ms | http://localhost:5000/error/500
+[2025-12-01 10:23:45] 200 |               |   45.32ms | http://localhost:8000/
+[2025-12-01 10:23:46] 200 |           |   52.18ms | http://localhost:8000/api/user/123
+[2025-12-01 10:23:47] 404 | 404           |   12.45ms | http://localhost:8000/error/404
+[2025-12-01 10:23:48] 500 | 500           |   23.67ms | http://localhost:8000/error/500
 
  
 ======================================================================
@@ -208,7 +208,7 @@ services:
     build: ./web-app
     container_name: elk-web-app
     ports:
-      - "5000:5000"
+      - "8000:8000"
     networks:
       - elk-network  # ← 
     restart: unless-stopped
@@ -239,7 +239,7 @@ networks:
   "function": "get_user",
   "line": 145,
   "http_method": "GET",
-  "url": "http://localhost:5000/api/user/123",
+  "url": "http://localhost:8000/api/user/123",
   "status_code": 200,
   "response_time_ms": 45.32,
   "ip": "172.17.0.1",
@@ -259,7 +259,7 @@ networks:
   "function": "error_500",
   "line": 289,
   "http_method": "GET",
-  "url": "http://localhost:5000/error/500",
+  "url": "http://localhost:8000/error/500",
   "status_code": 500,
   "response_time_ms": 23.67,
   "ip": "172.17.0.1",
@@ -315,17 +315,17 @@ networks:
 
 ### 1. 
 
-****`Bind for 0.0.0.0:5000 failed: port is already allocated`
+****`Bind for 0.0.0.0:8000 failed: port is already allocated`
 
 ****
 ```bash
 # 1
 #  docker-compose.yml 
 ports:
-  - "5001:5000"  #  5001
+  - "5001:8000"  #  5001
 
 # 2
-sudo lsof -i :5000
+sudo lsof -i :8000
 sudo kill -9 <PID>
 ```
 

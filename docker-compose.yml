@@ -137,6 +137,23 @@ services:
     labels:
       - "service=sample-app"
 
+  # Web 应用 
+  web-app:
+    build: ./web-app
+    container_name: elk-web-app
+    ports:
+      - "8000:8000"
+    networks:
+      - elk
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    labels:
+      - "service=web-app"
+
 networks:
   elk:
     driver: bridge

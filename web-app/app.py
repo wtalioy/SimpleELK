@@ -421,5 +421,5 @@ if __name__ == '__main__':
     # 启动 Flask 应用
     # host='0.0.0.0' 允许外部访问（Docker 容器需要）
     # debug=False 生产模式
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=8000, debug=False)
 

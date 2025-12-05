@@ -9,7 +9,7 @@ echo "🧪 ELK Web 应用快速测试"
 echo "=========================================="
 
 # 目标地址
-TARGET="http://localhost:5000"
+TARGET="http://localhost:8000"
 
 # 颜色定义
 GREEN='\033[0;32m'

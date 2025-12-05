@@ -28,7 +28,7 @@ from collections import defaultdict
 # ============================================
 
 # 目标服务器地址
-TARGET_URL = "http://localhost:5000"
+TARGET_URL = "http://localhost:8000"
 
 # 并发用户数
 CONCURRENT_USERS = 20
