@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Elasticsearch - 分布式搜索和分析引擎
   elasticsearch:
@@ -99,6 +97,31 @@ services:
       elasticsearch:
         condition: service_healthy
 
+  # Filebeat - 轻量级日志采集器
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:9.2.1
+    container_name: filebeat
+    hostname: filebeat
+    restart: unless-stopped
+    user: root
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - filebeat_data:/usr/share/filebeat/data
+      - filebeat_logs:/var/log/filebeat
+    ports:
+      - "5066:5066"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - LOGSTASH_HOSTS=logstash:5044
+      - STRICT_PERMS=false
+    networks:
+      - elk
+    depends_on:
+      - logstash
+    command: filebeat -e --strict.perms=false
+
   # Kibana - 数据可视化和管理界面
   kibana:
     image: docker.elastic.co/kibana/kibana:9.2.1
@@ -121,21 +144,21 @@ services:
       retries: 5
 
   # 示例应用 - 用于生成测试日志
-  sample-app:
-    image: nginx:alpine
-    container_name: sample-app
-    ports:
-      - "8080:80"
-    networks:
-      - elk
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
-        labels: "service"
-    labels:
-      - "service=sample-app"
+  # sample-app:
+  #   image: nginx:alpine
+  #   container_name: sample-app
+  #   ports:
+  #     - "8080:80"
+  #   networks:
+  #     - elk
+  #   logging:
+  #     driver: json-file
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
+  #       labels: "service"
+  #   labels:
+  #     - "service=sample-app"
 
   # Web 应用 
   web-app:
@@ -174,3 +197,19 @@ volumes:
       type: none
       o: bind
       device: ./volumes/elasticsearch/logs
+
+  # Filebeat 数据持久化卷
+  filebeat_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./volumes/filebeat/data
+
+  # Filebeat 日志持久化卷
+  filebeat_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./volumes/filebeat/logs
