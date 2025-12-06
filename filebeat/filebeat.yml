@@ -8,22 +8,17 @@
 # ==========================================
 filebeat.inputs:
   # 采集 Docker 容器标准输出 (stdout/stderr)
-  - type: container
+  - type: filestream
     enabled: true
     
     # Docker 容器日志路径
     paths:
       - '/var/lib/docker/containers/*/*.log'
     
-    # ==========================================
-    # JSON 解析配置
-    # Docker 容器日志格式: {"log": "{JSON日志}", "stream": "stdout"}
-    # ==========================================
-    json:
-      keys_under_root: false        # 先保持 Docker 结构
-      add_error_key: true           # 如果解析失败(如Gunicorn日志),添加错误字段
-      message_key: log              # Docker 的 log 字段包含实际日志
-      ignore_decoding_error: true   # 忽略非JSON日志(Gunicorn访问日志)
+    parsers:
+      - container:
+          stream: all         # stdout 和 stderr
+          format: auto        # 自动检测格式
     
     # 字段添加
     fields:
@@ -49,29 +44,23 @@ filebeat.inputs:
               contains:
                 container.name: "elk-web-app"
       
-      # 3. 解析 Docker log 字段中的 JSON 内容
-      - decode_json_fields:
-          fields: ["log"]
-          target: "app"             # 提取到 app 命名空间，避免冲突
-          overwrite_keys: false
-          add_error_key: true
-          max_depth: 3              # 支持嵌套 JSON (exception对象)
-          process_array: false
-      
-      # 4. 检测日志类型并打标签
+      # 3. 检测日志类型并打标签
       - script:
           lang: javascript
           source: >
             function process(event) {
-              var log = event.Get("log");
-              if (!log) return;
+              var msg = event.Get("message");
+              if (!msg) return;
               
-              // 检测是否是 JSON 格式的应用日志
-              if (log.trim().startsWith("{") && event.Get("app.timestamp")) {
+              // 去除空白字符
+              var trimmed = msg.replace(/^\s+|\s+$/g, '');
+              
+              // 检测是否是 JSON 格式的应用日志(以 { 开头)
+              if (trimmed.charAt(0) === '{') {
                 event.Put("log_type", "application");
               }
-              // 检测是否是 Gunicorn 访问日志
-              else if (log.match(/^\d+\.\d+\.\d+\.\d+/) || log.includes("GET ") || log.includes("POST ")) {
+              // 检测是否是 Gunicorn 访问日志 (IP地址开头)
+              else if (/^\d+\.\d+\.\d+\.\d+/.test(msg) || msg.indexOf("GET ") !== -1 || msg.indexOf("POST ") !== -1) {
                 event.Put("log_type", "gunicorn_access");
               }
               // 其他类型
@@ -79,6 +68,18 @@ filebeat.inputs:
                 event.Put("log_type", "other");
               }
             }
+      
+      # 4. 解析应用层 JSON 日志(仅对 application 类型)
+      - decode_json_fields:
+          when:
+            equals:
+              log_type: "application"
+          fields: ["message"]
+          target: "app"
+          overwrite_keys: false
+          add_error_key: true
+          max_depth: 3
+          process_array: false
       
       # 5. 处理应用 JSON 日志 - 提升到根级别
       - script:
@@ -111,7 +112,7 @@ filebeat.inputs:
             equals:
               log_type: "gunicorn_access"
           tokenizer: '%{client_ip} - - [%{timestamp}] "%{http_method} %{url} %{http_version}" %{status_code} %{response_size}'
-          field: "log"
+          field: "message" 
           target_prefix: "gunicorn"
           ignore_failure: true
       
@@ -126,7 +127,7 @@ filebeat.inputs:
               event.Put("level", "INFO");
               event.Put("log.level", "INFO");
               event.Put("logger", "gunicorn");
-              event.Put("message", event.Get("log"));
+              // message 字段已存在，不需要重新设置
               
               // 转换状态码为数字
               var statusCode = event.Get("gunicorn.status_code");
@@ -154,7 +155,7 @@ filebeat.inputs:
           netinfo.enabled: true
           cache.ttl: 5m
       
-      # 9. 解析应用日志的时间戳 (支持微秒精度)
+      # 9. 解析应用日志的时间戳
       - timestamp:
           field: timestamp
           layouts:
@@ -184,16 +185,16 @@ filebeat.inputs:
           method: "sha256"
           ignore_missing: true
       
-      # 12. 删除 Docker 包装字段和冗余字段
+      # 12. 删除冗余字段
       - drop_fields:
           fields:
-            - "log"                    # Docker 包装的原始字段（已解析）
-            - "stream"                 # Docker stream 字段
-            - "app"                    # 临时命名空间（已提升）
+            - "app"                    # 临时命名空间
             - "agent.ephemeral_id"
             - "agent.id"
             - "ecs.version"
             - "input.type"
+            - "log.offset"            
+            - "log.file.path"          
           ignore_missing: true
 
 # ==========================================
