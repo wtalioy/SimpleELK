@@ -120,7 +120,7 @@ services:
       - elk
     depends_on:
       - logstash
-    command: filebeat -e -strict.perms=false
+    command: filebeat -e --strict.perms=false
 
   # Kibana - 数据可视化和管理界面
   kibana:
@@ -144,21 +144,21 @@ services:
       retries: 5
 
   # 示例应用 - 用于生成测试日志
-  sample-app:
-    image: nginx:alpine
-    container_name: sample-app
-    ports:
-      - "8080:80"
-    networks:
-      - elk
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
-        labels: "service"
-    labels:
-      - "service=sample-app"
+  # sample-app:
+  #   image: nginx:alpine
+  #   container_name: sample-app
+  #   ports:
+  #     - "8080:80"
+  #   networks:
+  #     - elk
+  #   logging:
+  #     driver: json-file
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
+  #       labels: "service"
+  #   labels:
+  #     - "service=sample-app"
 
   # Web 应用 
   web-app:

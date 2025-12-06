@@ -18,30 +18,12 @@ filebeat.inputs:
     # ==========================================
     # JSON 解析配置
     # Docker 容器日志格式: {"log": "{JSON日志}", "stream": "stdout"}
-    # 需要两次解析: 1) Docker包装 2) 应用JSON日志
-    # 注意: Gunicorn 访问日志是文本格式,会被忽略
     # ==========================================
     json:
       keys_under_root: false        # 先保持 Docker 结构
       add_error_key: true           # 如果解析失败(如Gunicorn日志),添加错误字段
       message_key: log              # Docker 的 log 字段包含实际日志
       ignore_decoding_error: true   # 忽略非JSON日志(Gunicorn访问日志)
-    
-    # ==========================================
-    # 多行日志合并配置 (Multiline)
-    # Docker 容器日志已经是单行(JSON格式)
-    # 不需要多行合并,注释掉以提高性能
-    # ==========================================
-    # multiline:
-    #   type: pattern
-    #   pattern: '^(\{|  File |  )'
-    #   negate: false
-    #   match: after
-    #   max_lines: 500
-    #   timeout: 10s
-    
-    # 容器过滤 - 只采集 web-app 容器的日志
-    include_lines: ['.*']
     
     # 字段添加
     fields:
@@ -54,13 +36,13 @@ filebeat.inputs:
     # 处理器配置 (Processors)
     # ==========================================
     processors:
-      # 1. 添加 Docker 容器元数据（先添加，用于后续过滤）
+      # 1. 添加 Docker 容器元数据
       - add_docker_metadata:
           host: "unix:///var/run/docker.sock"
           match_fields: ["container.id"]
           labels.dedot: true
       
-      # 2. 只保留 web-app 容器的日志（早期过滤，提高性能）
+      # 2. 保留 web-app 容器的日志
       - drop_event:
           when:
             not:
@@ -195,7 +177,14 @@ filebeat.inputs:
           ignore_missing: true
           ignore_failure: true
       
-      # 11. 删除 Docker 包装字段和冗余字段
+      # 11. 添加指纹（用于去重）
+      - fingerprint:
+          fields: ["timestamp", "level", "container.id"]
+          target_field: "@metadata.fingerprint"
+          method: "sha256"
+          ignore_missing: true
+      
+      # 12. 删除 Docker 包装字段和冗余字段
       - drop_fields:
           fields:
             - "log"                    # Docker 包装的原始字段（已解析）

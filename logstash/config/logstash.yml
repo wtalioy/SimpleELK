@@ -1,9 +1,9 @@
 # Logstash 配置文件
 # 云原生日志收集平台
 
-# HTTP API 配置
-http.host: "0.0.0.0"
-http.port: 9600
+# API 配置
+api.http.host: "0.0.0.0"
+api.http.port: 9600
 
 # Pipeline 配置
 path.config: /usr/share/logstash/pipeline
