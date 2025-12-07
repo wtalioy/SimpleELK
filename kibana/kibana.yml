@@ -27,10 +27,10 @@ logging:
     appenders: [console]
 
 # 安全配置 (开发环境)
-xpack.security.enabled: false
-xpack.encryptedSavedObjects.encryptionKey: "something_at_least_32_characters"
-xpack.reporting.encryptionKey: "something_at_least_32_characters"
-xpack.security.encryptionKey: "something_at_least_32_characters"
+# 注意: Kibana 9.2.1 中，如果 Elasticsearch 禁用了安全功能，Kibana 会自动检测
+# security 配置通过环境变量 XPACK_SECURITY_ENABLED 设置
+xpack.encryptedSavedObjects.encryptionKey: "something_at_least_32_characters_long_key_for_dev"
+xpack.reporting.encryptionKey: "something_at_least_32_characters_long_key_for_dev"
 
 # 首页配置
 newsfeed.enabled: false
