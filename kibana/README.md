@@ -31,7 +31,7 @@ python stress_test.py
 2.  点击左下角 **`Stack Management`（堆栈管理）**。
 3.  进入 **`Saved Objects`（已保存对象）** 页面。
 4.  点击右上角 **`Import`（导入）** 按钮。
-5.  选择项目中的 `kibana/saved_objects/web_app_monitoring_dashboard.ndjson` 文件并导入。
+5.  选择项目中的 `kibana/export.ndjson` 文件并导入。
 6.  导入完成后，即可在“仪表盘”列表中找到并使用 **`Web应用监控中心`**。
 
 ### 仪表盘主界面
