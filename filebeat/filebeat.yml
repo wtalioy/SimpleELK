@@ -44,7 +44,7 @@ filebeat.inputs:
               contains:
                 container.name: "elk-web-app"
       
-      # 3. 检测日志类型并打标签
+      # 3. 检测日志类型（应用日志、Gunicorn 访问日志或其他）
       - script:
           lang: javascript
           source: >
