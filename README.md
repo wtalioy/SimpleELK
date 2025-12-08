@@ -9,7 +9,7 @@
 - `web-app/`：日志生成 Web 服务与压测脚本
 - `scripts/`：启动脚本
 - `volumes/`：持久化数据与日志挂载目录
-- `docs/`：设计文档（`design.md`、`elasticsearch-deployment.md`）
+- `docs/`：设计文档（`design.md`）
 
 ## 快速开始
 
@@ -27,6 +27,10 @@ docker compose ps
 curl http://localhost:9200        # Elasticsearch
 curl http://localhost:5601/api/status  # Kibana
 curl http://localhost:8000/health     # Web 应用
+
+# 生成测试流量（可选，便于仪表盘看到更多数据）
+cd web-app
+python stress_test.py
 ```
 
 关闭与清理：

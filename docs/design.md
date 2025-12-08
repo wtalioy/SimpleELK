@@ -77,7 +77,7 @@
 - 版本/运行：Gunicorn 8000，基于 `python:3.9-slim`，`PYTHONUNBUFFERED=1` 确保日志实时刷出，非 root `appuser`。
 - 接口：`/`、`/health`、`/api/user/<id>`、`/api/product/<id>`、`/api/order` (GET/POST)、`/api/login`、`/error/404`、`/error/500`、`/error/timeout`。
 - 日志：stdout JSON，字段含 timestamp/level/http_method/url/status_code/response_time_ms/ip/user_agent/exception.stacktrace；仅容器名含 `elk-web-app` 才被 Filebeat 采集。
-- 压测：`stress_test.py` 可调 `TARGET_URL`、并发、持续时间、请求间隔、verbose；输出 QPS/状态码分布/延时分位。
+- 压测：`stress_test.py` 可调 `TARGET_URL`、并发、持续时间、请求间隔、verbose；输出 QPS/状态码分布/延时分位。启动后在 `web-app/` 目录运行 `python stress_test.py` 可快速生成丰富的日志供仪表盘验证。
 - Dockerfile：健康检查 `/health`，可调 Gunicorn workers 以配合 CPU。
 
 ## 6. 数据持久化与目录
