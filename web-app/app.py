@@ -4,7 +4,7 @@
 Web 应用 - 用于生成日志供 ELK Stack 采集
 """
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, g
 import logging
 import json
 import time
@@ -12,6 +12,7 @@ import random
 from datetime import datetime
 import traceback
 import sys
+import uuid
 
 # 创建 Flask 应用
 app = Flask(__name__)
@@ -46,6 +47,10 @@ class JsonFormatter(logging.Formatter):
                 "ip": record.ip,
                 "user_agent": record.user_agent
             })
+
+        # 关联追踪 ID（用于跨日志关联）
+        if hasattr(record, 'trace_id'):
+            log_data["trace_id"] = record.trace_id
         
         # 如果有异常信息，添加堆栈跟踪
         if record.exc_info:
@@ -77,6 +82,13 @@ request_counter = {"count": 0}
 # ============================================
 # 辅助函数
 # ============================================
+def _get_trace_id():
+    """获取或生成请求级 trace_id"""
+    if not hasattr(g, "trace_id"):
+        g.trace_id = uuid.uuid4().hex
+    return g.trace_id
+
+
 def log_request(status_code, response_time, extra_msg=""):
     """
     记录 HTTP 请求日志
@@ -107,6 +119,7 @@ def log_request(status_code, response_time, extra_msg=""):
         log_level,
         message,
         extra={
+            'trace_id': _get_trace_id(),
             'http_method': request.method,
             'url': request.url,
             'status_code': status_code,
@@ -352,6 +365,7 @@ def error_500():
             "Internal Server Error",
             exc_info=True,  # 这会记录完整的堆栈跟踪
             extra={
+                'trace_id': _get_trace_id(),
                 'http_method': request.method,
                 'url': request.url,
                 'status_code': 500,
