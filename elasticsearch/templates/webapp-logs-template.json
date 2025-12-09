@@ -1,0 +1,206 @@
+{
+  "index_patterns": ["webapp-logs-*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "index.lifecycle.name": "webapp-logs-policy",
+      "index.lifecycle.rollover_alias": "webapp-logs",
+      "refresh_interval": "5s"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "timestamp": {
+          "type": "date"
+        },
+        "level": {
+          "type": "keyword"
+        },
+        "log_level": {
+          "type": "keyword"
+        },
+        "severity": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword"
+            }
+          }
+        },
+        "severity_lowercase": {
+          "type": "keyword"
+        },
+        "message": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "logger": {
+          "type": "keyword"
+        },
+        "module": {
+          "type": "keyword"
+        },
+        "function": {
+          "type": "keyword"
+        },
+        "line": {
+          "type": "integer"
+        },
+        "http_method": {
+          "type": "keyword"
+        },
+        "url": {
+          "type": "keyword"
+        },
+        "url_path": {
+          "type": "keyword"
+        },
+        "url_path_value": {
+          "type": "keyword"
+        },
+        "status_code": {
+          "type": "integer"
+        },
+        "response_time_ms": {
+          "type": "float"
+        },
+        "ip": {
+          "type": "ip"
+        },
+        "client": {
+          "properties": {
+            "ip": {
+              "type": "ip"
+            }
+          }
+        },
+        "user_agent": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "trace_id": {
+          "type": "keyword"
+        },
+        "trace": {
+          "properties": {
+            "id": {
+              "type": "keyword"
+            }
+          }
+        },
+        "exception": {
+          "properties": {
+            "type": {
+              "type": "keyword"
+            },
+            "message": {
+              "type": "text"
+            },
+            "stacktrace": {
+              "type": "text"
+            },
+            "full_stacktrace": {
+              "type": "text"
+            },
+            "has_stacktrace": {
+              "type": "boolean"
+            },
+            "stack_depth": {
+              "type": "integer"
+            }
+          }
+        },
+        "error": {
+          "properties": {
+            "type": {
+              "type": "keyword"
+            },
+            "message": {
+              "type": "text"
+            },
+            "stack_trace": {
+              "type": "text"
+            }
+          }
+        },
+        "service": {
+          "properties": {
+            "name": {
+              "type": "keyword"
+            }
+          }
+        },
+        "container": {
+          "properties": {
+            "name": {
+              "type": "keyword"
+            }
+          }
+        },
+        "service_name": {
+          "type": "keyword"
+        },
+        "tags": {
+          "type": "keyword"
+        },
+        "processed_at": {
+          "type": "date"
+        },
+        "event": {
+          "properties": {
+            "dataset": {
+              "type": "keyword"
+            },
+            "duration": {
+              "type": "long"
+            }
+          }
+        },
+        "http": {
+          "properties": {
+            "request": {
+              "properties": {
+                "method": {
+                  "type": "keyword"
+                }
+              }
+            },
+            "response": {
+              "properties": {
+                "status_code": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "log": {
+          "properties": {
+            "level": {
+              "type": "keyword"
+            }
+          }
+        }
+      }
+    }
+  },
+  "priority": 200,
+  "version": 1,
+  "_meta": {
+    "description": "Web应用日志索引模板"
+  }
+}
+

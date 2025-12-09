@@ -39,6 +39,20 @@ DURATION = 300  # 默认运行 5 分钟
 # 每个用户的请求间隔（秒）
 REQUEST_INTERVAL = (0.5, 2.0)  # 随机间隔 0.5-2 秒
 
+# 随机 User-Agent 列表（覆盖桌面/移动/不同浏览器）
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:118.0) Gecko/20100101 Firefox/118.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0",
+    "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.5993.90 Mobile Safari/537.36",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (Linux; Android 12; SM-G9980) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.5993.90 Mobile Safari/537.36 EdgA/118.0.2088.81",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Edg/119.0.1108.62",
+    "curl/8.2.1"
+]
+
 # 是否显示详细日志
 VERBOSE = True
 
@@ -69,67 +83,67 @@ SCENARIOS = [
         "name": "访问首页",
         "method": "GET",
         "url": "/",
-        "weight": 30,  # 30% 概率
+        "weight": 20,
     },
     {
         "name": "健康检查",
         "method": "GET",
         "url": "/health",
-        "weight": 10,  # 10% 概率
+        "weight": 5,
     },
     {
         "name": "查询用户信息",
         "method": "GET",
-        "url": lambda: f"/api/user/{random.randint(1, 1200)}",  # 动态生成 user_id
-        "weight": 25,  # 25% 概率
+        "url": lambda: f"/api/user/{random.randint(1, 1200)}",  # 一部分会返回404
+        "weight": 20,
     },
     {
         "name": "查询商品信息",
         "method": "GET",
-        "url": lambda: f"/api/product/{random.randint(1, 500)}",  # 动态生成 product_id
-        "weight": 20,  # 20% 概率
+        "url": lambda: f"/api/product/{random.randint(1, 500)}",
+        "weight": 15,
     },
     {
         "name": "查询订单列表",
         "method": "GET",
         "url": "/api/order",
-        "weight": 10,  # 10% 概率
+        "weight": 10,
     },
     {
         "name": "创建订单",
         "method": "POST",
         "url": "/api/order",
-        "weight": 8,  # 8% 概率
+        "weight": 8,
     },
     {
         "name": "用户登录",
         "method": "POST",
-        "url": "/api/login",
-        "weight": 5,  # 5% 概率
+        "url": "/api/login",  # 内部 20% 失败，返回 401
+        "weight": 7,
     },
     {
         "name": "触发404错误",
         "method": "GET",
         "url": "/error/404",
-        "weight": 3,  # 3% 概率
+        "weight": 6,
     },
     {
         "name": "触发500错误",
         "method": "GET",
         "url": "/error/500",
-        "weight": 2,  # 2% 概率
+        "weight": 4,
     },
     {
         "name": "访问不存在的页面",
         "method": "GET",
         "url": lambda: f"/nonexistent/{random.randint(1, 100)}",
-        "weight": 2,  # 2% 概率
+        "weight": 3,
     },
     {
         "name": "慢请求（超时）",
         "method": "GET",
         "url": "/error/timeout",
-        "weight": 1,  # 1% 概率（较少触发，因为很慢）
+        "weight": 2,
     },
 ]
 
@@ -189,17 +203,21 @@ def send_request(scenario):
     """
     method = scenario["method"]
     url = get_url(scenario)
+    headers = {
+        "User-Agent": random.choice(USER_AGENTS),
+        "Accept-Language": random.choice(["en-US,en;q=0.9", "zh-CN,zh;q=0.9", "en-GB,en;q=0.8"]),
+    }
     
     try:
         start_time = time.time()
         
         # 发送请求（设置超时为 10 秒）
         if method == "GET":
-            response = requests.get(url, timeout=10)
+            response = requests.get(url, timeout=10, headers=headers)
         elif method == "POST":
-            response = requests.post(url, json={}, timeout=10)
+            response = requests.post(url, json={}, timeout=10, headers=headers)
         else:
-            response = requests.request(method, url, timeout=10)
+            response = requests.request(method, url, timeout=10, headers=headers)
         
         response_time = time.time() - start_time
         

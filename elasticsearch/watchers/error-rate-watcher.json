@@ -1,0 +1,95 @@
+{
+  "trigger": {
+    "schedule": {
+      "interval": "1m"
+    }
+  },
+  "input": {
+    "search": {
+      "request": {
+        "search_type": "query_then_fetch",
+        "indices": ["webapp-logs-error-*", "webapp-logs-warning-*"],
+        "body": {
+          "size": 0,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "range": {
+                    "@timestamp": {
+                      "gte": "now-5m"
+                    }
+                  }
+                }
+              ],
+              "should": [
+                {
+                  "term": {
+                    "severity": "ERROR"
+                  }
+                },
+                {
+                  "term": {
+                    "severity": "WARNING"
+                  }
+                }
+              ],
+              "minimum_should_match": 1
+            }
+          },
+          "aggs": {
+            "error_count": {
+              "value_count": {
+                "field": "_id"
+              }
+            },
+            "errors_by_type": {
+              "terms": {
+                "field": "severity",
+                "size": 10
+              }
+            },
+            "errors_by_endpoint": {
+              "terms": {
+                "field": "url_path_value.keyword",
+                "size": 10
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "condition": {
+    "compare": {
+      "ctx.payload.aggregations.error_count.value": {
+        "gt": 10
+      }
+    }
+  },
+  "actions": {
+    "log_alert": {
+      "logging": {
+        "text": "告警: 在过去5分钟内检测到 {{ctx.payload.aggregations.error_count.value}} 个错误/警告日志。错误类型分布: {{ctx.payload.aggregations.errors_by_type.buckets}}"
+      }
+    },
+    "index_alert": {
+      "index": {
+        "index": "elk-alerts",
+        "doc_id": "error-rate-{{ctx.execution_time}}",
+        "body": {
+          "alert_type": "error_rate",
+          "timestamp": "{{ctx.execution_time}}",
+          "error_count": "{{ctx.payload.aggregations.error_count.value}}",
+          "error_distribution": "{{ctx.payload.aggregations.errors_by_type.buckets}}",
+          "top_error_endpoints": "{{ctx.payload.aggregations.errors_by_endpoint.buckets}}",
+          "message": "检测到异常错误率"
+        }
+      }
+    }
+  },
+  "metadata": {
+    "description": "监控错误日志率，当5分钟内错误/警告超过10条时触发告警"
+  }
+}
+

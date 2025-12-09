@@ -1,0 +1,104 @@
+{
+  "trigger": {
+    "schedule": {
+      "interval": "1m"
+    }
+  },
+  "input": {
+    "search": {
+      "request": {
+        "search_type": "query_then_fetch",
+        "indices": ["webapp-logs-*", "webapp-access-*"],
+        "body": {
+          "size": 0,
+          "query": {
+            "bool": {
+              "must": [
+                {
+                  "range": {
+                    "@timestamp": {
+                      "gte": "now-5m"
+                    }
+                  }
+                },
+                {
+                  "range": {
+                    "response_time_ms": {
+                      "gte": 1000
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "aggs": {
+            "slow_request_count": {
+              "value_count": {
+                "field": "_id"
+              }
+            },
+            "avg_response_time": {
+              "avg": {
+                "field": "response_time_ms"
+              }
+            },
+            "max_response_time": {
+              "max": {
+                "field": "response_time_ms"
+              }
+            },
+            "slow_endpoints": {
+              "terms": {
+                "field": "url_path_value.keyword",
+                "size": 10,
+                "order": {
+                  "avg_response_time": "desc"
+                }
+              },
+              "aggs": {
+                "avg_response_time": {
+                  "avg": {
+                    "field": "response_time_ms"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "condition": {
+    "compare": {
+      "ctx.payload.aggregations.slow_request_count.value": {
+        "gt": 5
+      }
+    }
+  },
+  "actions": {
+    "log_alert": {
+      "logging": {
+        "text": "告警: 在过去5分钟内检测到 {{ctx.payload.aggregations.slow_request_count.value}} 个慢请求（>1s）。平均响应时间: {{ctx.payload.aggregations.avg_response_time.value}}ms，最大响应时间: {{ctx.payload.aggregations.max_response_time.value}}ms"
+      }
+    },
+    "index_alert": {
+      "index": {
+        "index": "elk-alerts",
+        "doc_id": "slow-request-{{ctx.execution_time}}",
+        "body": {
+          "alert_type": "slow_request",
+          "timestamp": "{{ctx.execution_time}}",
+          "slow_request_count": "{{ctx.payload.aggregations.slow_request_count.value}}",
+          "avg_response_time_ms": "{{ctx.payload.aggregations.avg_response_time.value}}",
+          "max_response_time_ms": "{{ctx.payload.aggregations.max_response_time.value}}",
+          "slow_endpoints": "{{ctx.payload.aggregations.slow_endpoints.buckets}}",
+          "message": "检测到异常慢请求"
+        }
+      }
+    }
+  },
+  "metadata": {
+    "description": "监控慢请求，当5分钟内慢请求（>1s）超过5个时触发告警"
+  }
+}
+

@@ -1,0 +1,71 @@
+{
+  "index_patterns": [
+    "webapp-access-*"
+  ],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "index.lifecycle.name": "webapp-access-policy",
+      "index.lifecycle.rollover_alias": "webapp-access",
+      "refresh_interval": "5s"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "client_ip": {
+          "type": "ip"
+        },
+        "http_method": {
+          "type": "keyword"
+        },
+        "url_path": {
+          "type": "keyword"
+        },
+        "url_base": {
+          "type": "keyword"
+        },
+        "url_resource": {
+          "type": "keyword"
+        },
+        "status_code": {
+          "type": "integer"
+        },
+        "response_bytes": {
+          "type": "integer"
+        },
+        "severity": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword"
+            }
+          }
+        },
+        "log_level": {
+          "type": "keyword"
+        },
+        "tags": {
+          "type": "keyword"
+        },
+        "service_name": {
+          "type": "keyword"
+        },
+        "container": {
+          "properties": {
+            "name": {
+              "type": "keyword"
+            }
+          }
+        }
+      }
+    }
+  },
+  "priority": 200,
+  "version": 1,
+  "_meta": {
+    "description": "Web应用访问日志索引模板"
+  }
+}
